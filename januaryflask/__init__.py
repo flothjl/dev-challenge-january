@@ -1,6 +1,8 @@
 import os
 
 from flask import Flask, request, jsonify
+from . import db
+connection = db.init_db()
 
 
 def create_app(test_config=None):
@@ -25,14 +27,15 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
-    from . import db
-    connection = db.init_db()
-
+    from . import chat
+    app.register_blueprint(chat.bp)
+    from . import user
+    app.register_blueprint(user.bp)
     @app.route('/testpost', methods=['POST'])
     def create():
-        db.create(connection, u'test', {
-            u'first': u'j',
-            u'last': u'flo',
+        return db.create(connection, u'test', {
+            u'first': u'a',
+            u'last': u'lem',
             u'born': 1123
         })
     return app
