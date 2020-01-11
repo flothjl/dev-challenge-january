@@ -5,5 +5,9 @@
   },
   "storage": {
     "rules": "storage.rules"
+  },
+  "hosting": {
+    "public": "./januaryflask/auth_test",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   }
 }

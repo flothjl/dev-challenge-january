@@ -13,7 +13,7 @@ import os
 def init_db():
 
     DIR = os.getcwd()
-    cred = credentials.Certificate(DIR+'/admin-sdk.key.json')
+    cred = credentials.Certificate(os.path.join(DIR, 'admin-sdk.key.json'))
     firebase_admin.initialize_app(cred)
 
     db = firestore.client()

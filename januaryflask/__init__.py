@@ -6,25 +6,32 @@ from . import db
 connection = db.init_db()
 
 
-def authenticate(func):
-    def check_permissions(*args, **kwargs):
-        try:
-            id_token = request.args.get('id_token')
-            decoded_token = auth.verify_id_token(id_token)
-            uid = decoded_token['uid']
-        except:
-            return 'invalid id_token'
-        try:
-            doc_ref = connection.collection(
-                u'users').document(uid)
-            if doc_ref.to_dict():
-                return doc_ref.to_dict['permission_level']
-            else:
-                'no user exists'
-        except:
-            return 'not authorized'
-        return func(*args, **kwargs)
-    return check_permissions
+def authorize(role):
+    def wrapper(func):
+        def authorize_and_call(*args, **kwargs):
+            try:
+                id_token = request.args.get('id_token')
+                decoded_token = auth.verify_id_token(id_token)
+                uid = decoded_token['uid']
+            except:
+                return 'invalid id_token'
+            try:
+                doc_ref = connection.collection(
+                    u'users').document(uid).get()
+                print('doc_ref: {}'.format(doc_ref.to_dict()))
+                if doc_ref.to_dict():
+                    if role == doc_ref.to_dict()['permission_level']:
+                        print('role requirement met')
+                        return func(*args, **kwargs)
+                    else:
+                        return 'Unauthorized Access!'
+                else:
+                    'no user exists'
+            except Exception as e:
+                return "not authorized: {}".format(e)
+
+        return authorize_and_call
+    return wrapper
 
 
 def create_app(test_config=None):
@@ -60,4 +67,9 @@ def create_app(test_config=None):
             u'last': u'lem',
             u'born': 1123
         })
+
+    @app.route('/testauth')
+    @authorize('admin')
+    def create():
+        return 'You are authed and this passed'
     return app
