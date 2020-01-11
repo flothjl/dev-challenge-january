@@ -1,8 +1,30 @@
 import os
+from firebase_admin import auth
 
 from flask import Flask, request, jsonify
 from . import db
 connection = db.init_db()
+
+
+def authenticate(func):
+    def check_permissions(*args, **kwargs):
+        try:
+            id_token = request.args.get('id_token')
+            decoded_token = auth.verify_id_token(id_token)
+            uid = decoded_token['uid']
+        except:
+            return 'invalid id_token'
+        try:
+            doc_ref = connection.collection(
+                u'users').document(uid)
+            if doc_ref.to_dict():
+                return doc_ref.to_dict['permission_level']
+            else:
+                'no user exists'
+        except:
+            return 'not authorized'
+        return func(*args, **kwargs)
+    return check_permissions
 
 
 def create_app(test_config=None):
