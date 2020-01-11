@@ -1,6 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from firebase_admin import auth
 from flask import Flask, request, jsonify
 import os
 
@@ -9,6 +10,7 @@ import os
 
 
 def init_db():
+
     DIR = os.getcwd()
     cred = credentials.Certificate(DIR+'/admin-sdk.key.json')
     firebase_admin.initialize_app(cred)
@@ -18,5 +20,9 @@ def init_db():
 
 
 def create(db, collection, data):
-    doc_ref = db.collection(collection).document()
-    doc_ref.set(data)
+    try:
+        doc_ref = db.collection(collection).document()
+        doc_ref.set(data, merge=True)
+        return jsonify({"success": True})
+    except:
+        return "an error occurred"
