@@ -1,0 +1,33 @@
+openapi: 3.0.0
+info:
+  description: January Dev Challenge
+  version: "1.0.0"
+  title: January
+paths:
+  /users/{userGuid}:
+    parameters:
+      - in: path
+        name: userGuid
+        schema:
+          type: string
+        required: true
+    post:
+      description: Create User
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userGuid:
+                  type: string
+                  example: "guid"
+                username:
+                  type: number
+                  example: 1
+      responses:
+        200:
+          description: Successful
