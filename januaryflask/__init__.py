@@ -33,8 +33,9 @@ def authorize(role):
                     'no user exists'
             except Exception as e:
                 return "not authorized: {}".format(e)
-
+        authorize_and_call.__name__ = func.__name__
         return authorize_and_call
+
     return wrapper
 
 

@@ -14,22 +14,20 @@ bp = Blueprint('user', __name__, url_prefix='/user')
 
 # Get user by user id
 @bp.route('/get')
-def get_user():
-    if request.args.get('userid'):
-        doc_ref = connection.collection(
-            u'users').document(request.args.get('userid'))
+@authorize(0)
+def get_user(uid):
+    doc_ref = connection.collection(
+        u'users').document(uid)
 
-        try:
-            doc = doc_ref.get()
-            if doc.to_dict():
-                return(u'Document data: {}'.format(doc.to_dict()))
-            else:
-                return ('no doc')
-        except exceptions.NotFoundError:
-            return(u'No such document!')
-        return "user request initiated"
-    else:
-        return "no userid given"
+    try:
+        doc = doc_ref.get()
+        if doc.to_dict():
+            return(doc.to_dict())
+        else:
+            return ('no doc')
+    except exceptions.NotFoundError:
+        return(u'No such document!')
+    return "user request initiated"
 
 
 @bp.route('/update', methods=['POST'])
@@ -51,5 +49,22 @@ def update_user(uid):
 
 @bp.route('/update_permissions', methods=['POST'])
 @authorize(100)
-def update_permissions():
+def update_permissions(uid):
     return 'permissions updated'
+
+
+@bp.route('/getallusers', methods=['GET'])
+@authorize(100)
+def get_users(uid):
+    try:
+        doc_ref = connection.collection(u'users').stream()
+        users = []
+        for user in doc_ref:
+            user_dict = user.to_dict()
+            user_dict['id'] = user.id
+            users.append(user_dict)
+        return jsonify(users)
+
+        return users
+    except Exception as e:
+        return "Exception: ", e
