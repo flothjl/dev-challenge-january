@@ -1,9 +1,13 @@
 from januaryflask import connection
+from januaryflask import authorize
+
 import functools
 from firebase_admin import exceptions
+from firebase_admin import firestore
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
+
 # from januaryflask.db import init_db
 
 bp = Blueprint('user', __name__, url_prefix='/user')
@@ -29,8 +33,23 @@ def get_user():
 
 
 @bp.route('/update', methods=['POST'])
-def update_user():
-
+@authorize(0)
+def update_user(uid):
+    update_items = ['first', 'last', 'username']
     data = request.get_json()
+    data_keys = data.keys()
+    data_keys = [item for item in data_keys if item in update_items]
+    data_todb = {key: data[key] for key in data_keys}
+    data_todb['date_updated'] = firestore.SERVER_TIMESTAMP
+    try:
+        doc_ref = connection.collection(u'users').document(uid)
+        doc_ref.set(data_todb, merge=True)
+        return jsonify({"success": True})
+    except Exception as e:
+        return f"An Error Occured: {e}"
 
-    return 'updated'
+
+@bp.route('/update_permissions', methods=['POST'])
+@authorize(100)
+def update_permissions():
+    return ''

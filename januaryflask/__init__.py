@@ -7,12 +7,15 @@ connection = db.init_db()
 
 
 def authorize(role):
+    # decorator to restrict endpoints based on 'permission level' in user table
+    # roles: 0 = basic, 100 = admin
     def wrapper(func):
         def authorize_and_call(*args, **kwargs):
             try:
                 id_token = request.args.get('id_token')
                 decoded_token = auth.verify_id_token(id_token)
                 uid = decoded_token['uid']
+                print(decoded_token)
             except:
                 return 'invalid id_token'
             try:
@@ -20,9 +23,10 @@ def authorize(role):
                     u'users').document(uid).get()
                 print('doc_ref: {}'.format(doc_ref.to_dict()))
                 if doc_ref.to_dict():
-                    if role == doc_ref.to_dict()['permission_level']:
+                    if role <= doc_ref.to_dict()['permission_level']:
                         print('role requirement met')
-                        return func(*args, **kwargs)
+
+                        return func(uid, *args, **kwargs)
                     else:
                         return 'Unauthorized Access!'
                 else:
@@ -60,16 +64,9 @@ def create_app(test_config=None):
     app.register_blueprint(chat.bp)
     from . import user
     app.register_blueprint(user.bp)
-    @app.route('/testpost', methods=['POST'])
-    def create():
-        return db.create(connection, u'test', {
-            u'first': u'a',
-            u'last': u'lem',
-            u'born': 1123
-        })
 
     @app.route('/testauth')
-    @authorize('admin')
+    @authorize(100)
     def create():
         return 'You are authed and this passed'
     return app
