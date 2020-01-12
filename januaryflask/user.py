@@ -13,7 +13,7 @@ from flask import (
 bp = Blueprint('user', __name__, url_prefix='/user')
 
 # Get user by user id
-@bp.route('/')
+@bp.route('/get')
 def get_user():
     if request.args.get('userid'):
         doc_ref = connection.collection(
@@ -52,4 +52,4 @@ def update_user(uid):
 @bp.route('/update_permissions', methods=['POST'])
 @authorize(100)
 def update_permissions():
-    return ''
+    return 'permissions updated'
