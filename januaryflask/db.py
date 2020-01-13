@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from firebase_admin import auth
+
 from flask import Flask, request, jsonify
 import os
 
@@ -12,7 +13,7 @@ import os
 def init_db():
 
     DIR = os.getcwd()
-    cred = credentials.Certificate(DIR+'/admin-sdk.key.json')
+    cred = credentials.Certificate(os.path.join(DIR, 'admin-sdk.key.json'))
     firebase_admin.initialize_app(cred)
 
     db = firestore.client()
