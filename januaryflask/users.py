@@ -10,10 +10,10 @@ from flask import (
 
 # from januaryflask.db import init_db
 
-bp = Blueprint('user', __name__, url_prefix='/user')
+bp = Blueprint('users', __name__, url_prefix='/users')
 
 # Get user by user id
-@bp.route('/get')
+@bp.route('/')
 @authorize(0)
 def get_user(uid):
     doc_ref = connection.collection(
@@ -53,7 +53,7 @@ def update_permissions(uid):
     return 'permissions updated'
 
 
-@bp.route('/getallusers', methods=['GET'])
+@bp.route('/all', methods=['GET'])
 @authorize(100)
 def get_users(uid):
     try:
@@ -61,7 +61,7 @@ def get_users(uid):
         users = []
         for user in doc_ref:
             user_dict = user.to_dict()
-            user_dict['id'] = user.id
+            user_dict['_id'] = user.id
             users.append(user_dict)
         return jsonify(users)
 

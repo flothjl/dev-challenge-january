@@ -63,11 +63,13 @@ def create_app(test_config=None):
 
     from . import chat
     app.register_blueprint(chat.bp)
-    from . import user
-    app.register_blueprint(user.bp)
+    from . import users
+    app.register_blueprint(users.bp)
+    from . import forums
+    app.register_blueprint(forums.bp)
 
-    @app.route('/testauth')
-    @authorize(100)
+    @app.route('/isauthed')
+    @authorize(0)
     def create():
-        return 'You are authed and this passed'
+        return jsonify({"authed": True})
     return app
