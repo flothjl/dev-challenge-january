@@ -50,7 +50,20 @@ def update_user(uid):
 @bp.route('/update_permissions', methods=['POST'])
 @authorize(100)
 def update_permissions(uid):
-    return 'permissions updated'
+    update_items = ['permission_level']
+    data = request.get_json()
+    if 'permission_level' not in data.keys():
+        return 'permission level not provided'
+    data_keys = data.keys()
+    data_keys = [item for item in data_keys if item in update_items]
+    data_todb = {key: data[key] for key in data_keys}
+    data_todb['date_updated'] = firestore.SERVER_TIMESTAMP
+    try:
+        doc_ref = connection.collection(u'users').document(uid)
+        doc_ref.set(data_todb, merge=True)
+        return jsonify({"success": True})
+    except Exception as e:
+        return f"An Error Occured: {e}"
 
 
 @bp.route('/all', methods=['GET'])
