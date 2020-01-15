@@ -53,7 +53,7 @@ def message(user_id):
             data['date_created'] = firestore.SERVER_TIMESTAMP
             chat_ref = connection.collection(
                 u'chat').document(data['chat_id'])
-            if not chat_ref.get().to_dict():
+            if not chat_ref.get().to_dict(): #check if chat exists
                 return 'chat does not exist'
             chat_participants = chat_ref.get().to_dict()
             try:
@@ -67,3 +67,28 @@ def message(user_id):
         return 'POST'
     elif request.method == 'DELETE':
         return 'DELETE'
+
+@bp.route('/getall', methods=['GET'])
+@authorize(0)
+def get_all_conversations(user_id):
+    try:
+        doc_ref = connection.collection(u'chat').where(u'participants', u'array_contains', user_id).stream()
+        conversations = []
+        for conversation in doc_ref:
+            conversation_dict = conversation.to_dict()
+            conversation_dict['_id'] = conversation.id
+            conversation_dict['messages'] = []
+            
+
+            messages_ref = connection.collection(u'chat').document(
+                category.id).collection(u'messages').stream()
+            
+            for message in messages_ref:
+                message_dict = message.to_dict()
+                message_dict['_id'] = message.id
+                conversation_dict['messages'].append(message_dict)
+            conversations.append(conversation_dict)
+        return jsonify(conversations)
+
+    except Exception as e:
+        return "Exception: ", e
